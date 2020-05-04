@@ -15,6 +15,7 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     private var mCurrentPosition: Int = 1
     private var mQuestionsList: ArrayList<QuestionModel>? = null
     private var mSelectedOptionPosition: Int = 0
+    private var mNextQuestion: Boolean = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,11 +34,12 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun setQuestion() {
         defaultOptionsView()
+        mNextQuestion = false
         val question = mQuestionsList!![mCurrentPosition - 1]
 
-        if(mCurrentPosition == mQuestionsList!!.size){
+        if (mCurrentPosition == mQuestionsList!!.size) {
             btn_submit.text = "FINISH"
-        } else{
+        } else {
             btn_submit.text = "SUBMIT"
         }
 
@@ -75,6 +77,12 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
             R.id.tv_answer_three -> selectedOptionView(tv_answer_three, 3)
             R.id.tv_answer_four -> selectedOptionView(tv_answer_four, 4)
             R.id.btn_submit -> {
+                //Ensures the user does not submit without an answer
+                if (mSelectedOptionPosition <= 0 && !mNextQuestion) {
+                    Toast.makeText(this, "Please select an answer", Toast.LENGTH_SHORT).show()
+                    return
+                }
+
                 if (mSelectedOptionPosition == 0) {
                     mCurrentPosition++
                     when {
@@ -89,17 +97,18 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
                             ).show()
                         }
                     }
-                } else{
+                } else {
                     val question = mQuestionsList?.get(mCurrentPosition - 1)
-                    if(question!!.correctAnswer != mSelectedOptionPosition){
+                    if (question!!.correctAnswer != mSelectedOptionPosition) {
                         answerView(mSelectedOptionPosition, R.drawable.wrong_option_border_bg)
                     }
                     answerView(question.correctAnswer, R.drawable.correct_option_border_bg)
 
-                    if(mCurrentPosition == mQuestionsList!!.size){
+                    if (mCurrentPosition == mQuestionsList!!.size) {
                         btn_submit.text = "FINISH"
-                    } else{
+                    } else {
                         btn_submit.text = "Next Question"
+                        mNextQuestion = true
                     }
                     mSelectedOptionPosition = 0
                 }
@@ -115,6 +124,7 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
         tv.setTypeface(tv.typeface, Typeface.BOLD)
         tv.background = ContextCompat.getDrawable(this, R.drawable.selected_option_border_bg)
     }
+
 
     private fun answerView(answer: Int, drawableView: Int) {
         when (answer) {
