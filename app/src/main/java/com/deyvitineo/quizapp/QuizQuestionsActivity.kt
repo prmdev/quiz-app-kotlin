@@ -16,12 +16,15 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     private var mQuestionsList: ArrayList<QuestionModel>? = null
     private var mSelectedOptionPosition: Int = 0
     private var mNextQuestion: Boolean = false
+    private var mUsername: String? = null
+    private var mCorrectAnswers: Int = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quiz_questions)
 
+        mUsername = intent.getStringExtra(Constants.USER_NAME)
         mQuestionsList = Constants.getQuestions()
         setQuestion()
 
@@ -101,6 +104,8 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
                     val question = mQuestionsList?.get(mCurrentPosition - 1)
                     if (question!!.correctAnswer != mSelectedOptionPosition) {
                         answerView(mSelectedOptionPosition, R.drawable.wrong_option_border_bg)
+                    } else {
+                        mCorrectAnswers++
                     }
                     answerView(question.correctAnswer, R.drawable.correct_option_border_bg)
 
@@ -135,4 +140,5 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    //TODO (CLEAN UP CODE!! Allow user to only answer once, Automatically move to the next question in 3 seconds or so, send info to result activity and display it)
 }
