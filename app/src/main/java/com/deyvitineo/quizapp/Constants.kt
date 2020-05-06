@@ -1,5 +1,7 @@
 package com.deyvitineo.quizapp
 
+import kotlin.math.roundToInt
+
 object Constants {
 
     const val USER_NAME: String = "user_name"
@@ -92,5 +94,15 @@ object Constants {
         questionsList.add(questionTen)
 
         return questionsList
+    }
+
+    /**
+     * Returns the percentage average
+     * @param correctAnswers number of answers the user got correct
+     * @param numberOfQuestions amount of questions the user had to answer
+     */
+    fun getAverage(correctAnswers: Double, numberOfQuestions: Double): Int {
+        val result = (correctAnswers / numberOfQuestions) * 100
+        return result.roundToInt()
     }
 }

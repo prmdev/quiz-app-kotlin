@@ -2,9 +2,11 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sv_scroll_view_questions"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
+    android:focusable="true"
     tools:context=".QuizQuestionsActivity">
 
     <LinearLayout
@@ -115,6 +117,30 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="SUBMIT"
+            android:layout_margin="10dp"
+            android:background="@color/colorPrimary"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="18sp"/>
+
+        <Button
+            android:id="@+id/btn_next"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="NEXT QUESTION"
+            android:layout_margin="10dp"
+            android:background="@color/colorPrimary"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:textSize="18sp"/>
+
+        <Button
+            android:id="@+id/btn_finish"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SEE RESULTS"
+            android:visibility="gone"
             android:layout_margin="10dp"
             android:background="@color/colorPrimary"
             android:textColor="@android:color/white"

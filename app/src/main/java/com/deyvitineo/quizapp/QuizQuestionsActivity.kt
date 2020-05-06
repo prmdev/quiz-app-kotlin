@@ -1,5 +1,6 @@
 package com.deyvitineo.quizapp
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -15,7 +16,6 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     private var mCurrentPosition: Int = 1
     private var mQuestionsList: ArrayList<QuestionModel>? = null
     private var mSelectedOptionPosition: Int = 0
-    private var mNextQuestion: Boolean = false
     private var mUsername: String? = null
     private var mCorrectAnswers: Int = 0
 
@@ -28,28 +28,24 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
         mQuestionsList = Constants.getQuestions()
         setQuestion()
 
-        tv_answer_one.setOnClickListener(this)
-        tv_answer_two.setOnClickListener(this)
-        tv_answer_three.setOnClickListener(this)
-        tv_answer_four.setOnClickListener(this)
         btn_submit.setOnClickListener(this)
+        btn_next.setOnClickListener(this)
+        btn_finish.setOnClickListener(this)
     }
 
+    // Sets questions and updates progress bar
     private fun setQuestion() {
         defaultOptionsView()
-        mNextQuestion = false
+
+        addAnswersListeners()
         val question = mQuestionsList!![mCurrentPosition - 1]
 
-        if (mCurrentPosition == mQuestionsList!!.size) {
-            btn_submit.text = "FINISH"
-        } else {
-            btn_submit.text = "SUBMIT"
-        }
-
+        //update progress bar
         progress_bar.progress = mCurrentPosition
         val progressText = "$mCurrentPosition/ ${progress_bar.max}"
         tv_progress.text = progressText
 
+        //set values for question, image and answers
         tv_question.text = question.question
         iv_flag.setImageResource(question.image)
         tv_answer_one.text = question.optionOne
@@ -58,6 +54,7 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
         tv_answer_four.text = question.optionFour
     }
 
+    //Set default view for answers
     private fun defaultOptionsView() {
         val options = ArrayList<TextView>()
         options.add(0, tv_answer_one)
@@ -81,46 +78,52 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
             R.id.tv_answer_four -> selectedOptionView(tv_answer_four, 4)
             R.id.btn_submit -> {
                 //Ensures the user does not submit without an answer
-                if (mSelectedOptionPosition <= 0 && !mNextQuestion) {
+                if (mSelectedOptionPosition <= 0) {
                     Toast.makeText(this, "Please select an answer", Toast.LENGTH_SHORT).show()
                     return
                 }
 
-                if (mSelectedOptionPosition == 0) {
-                    mCurrentPosition++
-                    when {
-                        mCurrentPosition <= mQuestionsList!!.size -> {
-                            setQuestion()
-                        }
-                        else -> {
-                            Toast.makeText(
-                                this,
-                                "You have successfully completed the quiz",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
-                } else {
-                    val question = mQuestionsList?.get(mCurrentPosition - 1)
-                    if (question!!.correctAnswer != mSelectedOptionPosition) {
-                        answerView(mSelectedOptionPosition, R.drawable.wrong_option_border_bg)
-                    } else {
-                        mCorrectAnswers++
-                    }
-                    answerView(question.correctAnswer, R.drawable.correct_option_border_bg)
+                btn_submit.visibility = View.GONE
+                removeAnswersListeners() //removes the ability to change answers after submitting
 
-                    if (mCurrentPosition == mQuestionsList!!.size) {
-                        btn_submit.text = "FINISH"
-                    } else {
-                        btn_submit.text = "Next Question"
-                        mNextQuestion = true
-                    }
-                    mSelectedOptionPosition = 0
+                if (mCurrentPosition == mQuestionsList!!.size) { //finish the quiz
+                    btn_finish.visibility = View.VISIBLE
+                } else {
+                    btn_next.visibility = View.VISIBLE //go to next question
                 }
+
+                val question = mQuestionsList?.get(mCurrentPosition - 1)
+                if (question!!.correctAnswer != mSelectedOptionPosition) {
+                    answerViewUpdate(mSelectedOptionPosition, R.drawable.wrong_option_border_bg)
+                } else {
+                    mCorrectAnswers++
+                }
+                answerViewUpdate(question.correctAnswer, R.drawable.correct_option_border_bg)
+            }
+            R.id.btn_next -> {
+                btn_next.visibility = View.GONE
+                btn_submit.visibility = View.VISIBLE
+                mCurrentPosition++
+                mSelectedOptionPosition = 0
+                sv_scroll_view_questions.requestFocus(View.FOCUS_UP)
+                sv_scroll_view_questions.scrollTo(0,0)
+                setQuestion()
+            }
+            R.id.btn_finish -> {
+                btn_next.visibility = View.GONE
+                btn_submit.visibility = View.GONE
+
+                val intent = Intent(this, ResultActivity::class.java)
+                intent.putExtra(Constants.USER_NAME, mUsername)
+                intent.putExtra(Constants.CORRECT_ANSWERS, mCorrectAnswers)
+                intent.putExtra(Constants.TOTAL_QUESTIONS, mQuestionsList!!.size)
+                startActivity(intent)
+                finish()
             }
         }
     }
 
+    //Changes background of a selected answer to the proper style
     private fun selectedOptionView(tv: TextView, selectedOptionNum: Int) {
         defaultOptionsView()
         mSelectedOptionPosition = selectedOptionNum
@@ -131,7 +134,12 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     }
 
 
-    private fun answerView(answer: Int, drawableView: Int) {
+    /**
+     * Updates the background and style of the textview based on the information passed
+     * @param answer the answer selected by the user: used to determine which textview to update
+     * @param drawableView the drawable file to be used for the view
+     */
+    private fun answerViewUpdate(answer: Int, drawableView: Int) {
         when (answer) {
             1 -> tv_answer_one.background = ContextCompat.getDrawable(this, drawableView)
             2 -> tv_answer_two.background = ContextCompat.getDrawable(this, drawableView)
@@ -140,5 +148,19 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    //TODO (CLEAN UP CODE!! Allow user to only answer once, Automatically move to the next question in 3 seconds or so, send info to result activity and display it)
+    //Removes listeners from textviews to avoid changing answers after submitting
+    private fun removeAnswersListeners(){
+        tv_answer_one.setOnClickListener(null)
+        tv_answer_two.setOnClickListener(null)
+        tv_answer_three.setOnClickListener(null)
+        tv_answer_four.setOnClickListener(null)
+    }
+
+    //adds listeners to textviews
+    private fun addAnswersListeners(){
+        tv_answer_one.setOnClickListener(this)
+        tv_answer_two.setOnClickListener(this)
+        tv_answer_three.setOnClickListener(this)
+        tv_answer_four.setOnClickListener(this)
+    }
 }
