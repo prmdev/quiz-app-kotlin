@@ -1,4 +1,4 @@
-package com.deyvitineo.quizapp
+package com.prmdev.quizapp
 
 import org.junit.Test
 
